@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="om">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gabaasa Deebii Liqii MotorPaampii - Baankii Siinqee</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --primary: #0f5132;
+      --primary-hover: #0a3622;
+      --secondary-accent: #1f4e78;
+      --danger: #b91c1c;
+      --border: #cbd5e1;
+      --total-bg: #e9edf4;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 16px;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: var(--card);
+      padding: 16px 20px;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      margin-bottom: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      border-top: 4px solid var(--primary);
+    }
+
+    .header h1 {
+      font-size: 20px;
+      margin: 0;
+      color: var(--primary);
+    }
+
+    .date-badge {
+      margin: 6px 0 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--secondary-accent);
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    button {
+      padding: 10px 14px;
+      border: none;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--primary-hover); }
+
+    .btn-excel {
+      background: var(--secondary-accent);
+      color: #fff;
+    }
+    .btn-excel:hover { background: #163a59; }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+    .btn-secondary:hover { background: #cbd5e1; }
+
+    .card {
+      background: var(--card);
+      padding: 16px 20px;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      margin-bottom: 16px;
+    }
+
+    .form-panel {
+      display: none;
+      border-left: 4px solid var(--primary);
+    }
+    .form-panel.active { display: block; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #334155;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      background: #fff;
+      color: #0f172a;
+    }
+
+    .hint-text {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .status-msg {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      display: none;
+    }
+    .status-msg.error {
+      display: block;
+      background: #fef2f2;
+      color: var(--danger);
+      border: 1px solid #fecaca;
+    }
+    .status-msg.success {
+      display: block;
+      background: #f0fdf4;
+      color: var(--primary);
+      border: 1px solid #bbf7d0;
+    }
+
+    .farmer-info-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-top: 12px;
+      font-size: 13px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .toolbar input,
+    .toolbar select {
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      min-width: 920px;
+    }
+
+    thead th {
+      background: var(--secondary-accent);
+      color: #ffffff;
+      padding: 10px 8px;
+      text-align: left;
+      font-weight: 600;
+      border: 1px solid #163a59;
+      white-space: nowrap;
+    }
+
+    thead th.num, tbody td.num {
+      text-align: right;
+    }
+
+    thead th.center, tbody td.center {
+      text-align: center;
+    }
+
+    tbody td {
+      padding: 8px;
+      border: 1px solid #e2e8f0;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #f8fafc;
+    }
+
+    tbody tr.total-row td {
+      background: var(--total-bg);
+      font-weight: 700;
+      border-top: 2px solid #94a3b8;
+      color: #0f172a;
+    }
+
+    .ttn-log-list {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+
+    .footer-help {
+      background: var(--card);
+      padding: 14px 20px;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      text-align: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1>🚜 Gabaasa Deebii Liqii MootarPampii (Baankii Siinqee)</h1>
+        <div class="date-badge" id="dateYearDisplay">Guyyaa fi Bara: -</div>
+      </div>
+      <div class="btn-group">
+        <button class="btn-primary" id="toggleFormBtn">+ Kaffaltii &amp; Ragaa Galchi</button>
+        <button class="btn-excel" id="downloadExcelBtn">⬇ Gabaasa Excel (.xlsx) Buufadhu</button>
+        <button class="btn-secondary" id="downloadCsvBtn">⬇ CSV Buufadhu</button>
+      </div>
+    </div>
+
+    <!-- Foormii Ganda Filachuu, Qotee Bulaa Filachuu, TTNO Baankii Siinqee & Suuraa Galchuu -->
+    <div class="card form-panel" id="paymentPanel">
+      <h3 style="margin-top:0; color:var(--primary);">Kaffaltii Deebii Liqii, TTNO Baankii Siinqee fi Suuraa Ragaa Galchuu</h3>
+      <form id="paymentForm">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>1. Maqaa Ganda Filadhu *</label>
+            <select id="selectGanda" required>
+              <option value="">-- Ganda Filadhu --</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>2. Maqaa Qotee Bulaa Filadhu *</label>
+            <select id="selectFarmer" required disabled>
+              <option value="">-- Jalqaba Ganda Filadhu --</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>3. Baankii Kaffaltii *</label>
+            <select id="selectBank" required>
+              <option value="Baankii Siinqee">Baankii Siinqee</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>4. Lakkoofsa TTNO (Baankii Siinqee) *</label>
+            <input type="text" id="ttnInput" required placeholder="fkn SQ2632412345 ykn FT2632412345" />
+            <div class="hint-text">TTNO walfakkaataa hin fudhatu; foormaatii TTNO Baankii Siinqee ni mirkaneessa.</div>
+          </div>
+
+          <div class="form-group">
+            <label>5. Qarshii Liqii Deebise (Raawii deebii liqii) *</label>
+            <input type="number" id="paidAmountInput" min="1" step="0.01" required placeholder="fkn 25000" />
+          </div>
+
+          <div class="form-group">
+            <label>6. Suuraa Ragaa Baankii (Upload) *</label>
+            <input type="file" id="receiptFileInput" accept="image/*" required />
+            <div class="hint-text">Suuraa waraqaa ragaa kaffaltii Baankii Siinqee filadhu.</div>
+          </div>
+        </div>
+
+        <div class="farmer-info-box" id="selectedFarmerDetails">
+          <span><b>lakk:</b> -</span>
+          <span><b>Baayina sharaa fudhatee:</b> -</span>
+          <span><b>Qarshii waliigaltee godhame:</b> -</span>
+          <span><b>Qusannaa Duraa qusatame:</b> -</span>
+          <span><b>Karoora deebii liqii:</b> -</span>
+          <span><b>Raawii ammaa:</b> -</span>
+        </div>
+
+        <div id="formStatusMsg" class="status-msg"></div>
+
+        <div style="margin-top:14px; display:flex; gap:8px;">
+          <button type="submit" class="btn-primary">Galmeessi &amp; Gabaasa Haaromsi</button>
+          <button type="button" class="btn-secondary" id="cancelFormBtn">Cufi</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Gabatee Gabaasaa -->
+    <div class="card">
+      <div class="toolbar">
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <input type="text" id="searchInput" placeholder="Maqaa qotee bulaa ykn Ganda barbaadi..." />
+          <select id="tableGandaFilter">
+            <option value="">Ganda Hundaa</option>
+          </select>
+        </div>
+        <div id="ttnCountText" style="font-size:13px; font-weight:700; color:var(--primary);">
+          TTNO Galmaa'e: 0
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="reportTable">
+          <thead>
+            <tr>
+              <th class="center">lakk</th>
+              <th>Ganda</th>
+              <th>Maqaa Qonnaa bulaa</th>
+              <th class="num">Baayina sharaa fudhatee</th>
+              <th class="num">Qarshii waliigaltee godhame</th>
+              <th class="num">Qusannaa Duraa qusatame</th>
+              <th class="num">Karoora deebii liqii</th>
+              <th class="num">Raawii deebii liqii</th>
+              <th class="num">%deebi'e</th>
+            </tr>
+          </thead>
+          <tbody id="reportBody"></tbody>
+        </table>
+      </div>
+
+      <div class="ttn-log-list" id="ttnLogSummary">
+        Ragaa TTNO galmaa'e: Hanga ammaatti kan galmaa'e hin jiru.
+      </div>
+    </div>
+
+    <div class="footer-help">
+      Odeeffannoo fi gargaarsaaf: +251905158371
+    </div>
+  </div>
+
+  <script>
+    const tg = window.Telegram && window.Telegram.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
+
+    const STORAGE_ROWS_KEY = "siinqee_pump_credit_rows_v1";
+    const STORAGE_TTN_KEY = "siinqee_pump_credit_ttns_v1";
+
+    // Guyyaa fi Bara (Gregorian fi Ethiopian)
+    function formatDateAndYear() {
+      const now = new Date();
+      const dd = String(now.getDate()).padStart(2, "0");
+      const mm = String(now.getMonth() + 1).padStart(2, "0");
+      const yyyy = now.getFullYear();
+
+      // Shallaggii Bara Itoophiyaa (EC)
+      const isBeforeSep11 = (now.getMonth() + 1 < 9) || (now.getMonth() + 1 === 9 && now.getDate() < 11);
+      const ethYear = isBeforeSep11 ? yyyy - 8 : yyyy - 7;
+
+      return `Guyyaa: ${dd}/${mm}/${yyyy} | Bara: ${yyyy} GC / ${ethYear} EC`;
+    }
+
+    const dateYearStr = formatDateAndYear();
+    document.getElementById("dateYearDisplay").textContent = dateYearStr;
+
+    const initialData = [
+      { lakk: 1, ganda: "Tayfee", name: "Sh/ Abdulbaasixi", qty: 3, contract: 169050, prior: 50000.00, plan: 119050.00, actual: 50000 },
+      { lakk: 2, ganda: "Tayfee", name: "Riyaad Adam Badhasoo", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 3, ganda: "Tayfee", name: "Barraa Saanii Irbuu", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 4, ganda: "Tayfee", name: "Girmaa Katamaa", qty: 6, contract: 338100, prior: 15000.00, plan: 323100.00, actual: 15000 },
+      { lakk: 5, ganda: "Tayfee", name: "Gabayyoo Kaasiyyee", qty: 2, contract: 112700, prior: 30000.00, plan: 139050.00, actual: 30000 },
+      { lakk: 6, ganda: "Tayfee", name: "Maaruuf Sh /Ashim", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 7, ganda: "Tayfee", name: "Buusaa Gonofaa", qty: 2, contract: 112700, prior: 0, plan: 112700.00, actual: 0 },
+      { lakk: 8, ganda: "Tayfee", name: "Dabalee Caalaa", qty: 1, contract: 56350, prior: 5000.00, plan: 31350.00, actual: 5000 },
+      { lakk: 9, ganda: "Tayfee", name: "Ahmad Sheekaa", qty: 1, contract: 56350, prior: 5000.00, plan: 51350.00, actual: 5000 },
+      { lakk: 10, ganda: "Tayfee", name: "Abdusalam Abdulmajid", qty: 1, contract: 56350, prior: 5000.00, plan: 51350.00, actual: 5000 },
+      { lakk: 11, ganda: "Tayfee", name: "Addis Damissee", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 12, ganda: "Tayfee", name: "Bariisoo Sharafuddin", qty: 1, contract: 56350, prior: 5000.00, plan: 51350.00, actual: 5000 },
+      { lakk: 13, ganda: "Tayfee", name: "Aliyyii Amiin", qty: 1, contract: 56350, prior: 5000.00, plan: 51350.00, actual: 5000 },
+      { lakk: 14, ganda: "Tayfee", name: "Araboo Abdulahi Adem", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 15, ganda: "Tayfee", name: "Aliyy Saanii Huseen", qty: 1, contract: 56350, prior: 5000.00, plan: 51350.00, actual: 5000 },
+      { lakk: 16, ganda: "Tayfee", name: "Sulxaan Mahammad Huseen", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 17, ganda: "Tayfee", name: "Abdalaa Saanii Huseen", qty: 1, contract: 56350, prior: 5000.00, plan: 51350.00, actual: 5000 },
+      { lakk: 18, ganda: "Tayfee", name: "Abdoo Huseen Adem", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 19, ganda: "Tayfee", name: "Murtii Kadir Adem", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 20, ganda: "Tayfee", name: "Hasan Aliyyii Abdullahi", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 21, ganda: "Tayfee", name: "Masud Shamshaadin Hasan", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 22, ganda: "Tayfee", name: "Abdulaaziz Hasan Adam", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 23, ganda: "Tayfee", name: "Abdii Mahammad", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 24, ganda: "Tayfee", name: "Misiroo Mahammad Kadir", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 25, ganda: "Tayfee", name: "Huseen Aliyyii Bulee", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 26, ganda: "Tayfee", name: "Sh/Abduulaziz Kadir Adam", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 27, ganda: "Tayfee", name: "Ayyalaa Kaasayyee", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 28, ganda: "Tayfee", name: "Bookee Mahammad tukkaa", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 29, ganda: "Tayfee", name: "Ibsaa Mahamad Daadhii", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 30, ganda: "Tayfee", name: "Sanyii Baalchaa", qty: 1, contract: 56350, prior: 10000.00, plan: 46350.00, actual: 10000 },
+      { lakk: 31, ganda: "C/dakkaraa", name: "Kaliif Ahmad Aliyyii", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 32, ganda: "C/dakkaraa", name: "Husee Jamal Kaabiraa", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 33, ganda: "C/dakkaraa", name: "Jamal Said Husmaan", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 34, ganda: "C/dakkaraa", name: "Mahammad Hasan", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 35, ganda: "C/dakkaraa", name: "Abdii Usmaan Saqaa", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 36, ganda: "C/dakkaraa", name: "Muktar Adam Mommed", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 37, ganda: "C/dakkaraa", name: "Sulxaan Ibroo Umar", qty: 1, contract: 56350, prior: 5000.00, plan: 51350.00, actual: 5000 },
+      { lakk: 38, ganda: "C/dakkaraa", name: "Adem Adullaa Adem", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 39, ganda: "C/dakkaraa", name: "Ahmad Ariif Mahammad", qty: 1, contract: 56350, prior: 5000.00, plan: 51350.00, actual: 5000 },
+      { lakk: 40, ganda: "C/dakkaraa", name: "Faraahan Abdullaa Adam", qty: 1, contract: 56350, prior: 5000.00, plan: 51350.00, actual: 5000 },
+      { lakk: 41, ganda: "C/dakkaraa", name: "Bilisaa Jamal Usmaan", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 42, ganda: "C/dakkaraa", name: "Abdujalil Jamaaloo", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 43, ganda: "C/dakkaraa", name: "Ziyaad Ahmad Sheekaa", qty: 1, contract: 56350, prior: 15000.00, plan: 56350.00, actual: 15000 },
+      { lakk: 44, ganda: "K/baadiyaa", name: "Imbaabal Girmaa", qty: 2, contract: 112700, prior: 0, plan: 112700.00, actual: 0 },
+      { lakk: 45, ganda: "K/baadiyaa", name: "Gaaddisaa Hasanoo Aqiluu", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 46, ganda: "R/Dibichaa", name: "Sheeyibii Sulxaan Bulee", qty: 1, contract: 56350, prior: 5000.00, plan: 51350.00, actual: 5000 },
+      { lakk: 47, ganda: "R/Dibichaa", name: "Mahammad Nuuree Qallaa", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 48, ganda: "R/Dibichaa", name: "Dinoo Mahammad Nuuree", qty: 1, contract: 56350, prior: 25000.00, plan: 56350.00, actual: 25000 },
+      { lakk: 49, ganda: "Guutayyuu", name: "Falmataa Abdulbaasixi", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 50, ganda: "Guutayyuu", name: "Sulxaan SH/ Amaan Usmaan", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 51, ganda: "Guutayyuu", name: "Mahammad Ziyaad Huseen", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 52, ganda: "Guutayyuu", name: "Seefii Mahammad Aloo", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 53, ganda: "Guutayyuu", name: "Rijaal Huseen Kurii", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 54, ganda: "Guutayyuu", name: "Abduraazaqi Mahammad", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 55, ganda: "Guutayyuu", name: "Abdullayyii Abduuraaqi", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 56, ganda: "Guutayyuu", name: "Ahmad Kadir Mahammad", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 57, ganda: "B/waaqoo", name: "Abduulaahab Abdullaa Adam", qty: 1, contract: 56350, prior: 0, plan: 56350.00, actual: 0 },
+      { lakk: 58, ganda: "H/gurraattii", name: "Kadir Abbaammee Jibralay", qty: 6, contract: 338100, prior: 0, plan: 338100.00, actual: 0 },
+      { lakk: 59, ganda: "B/Oromiyaa", name: "Huseen Ahmad Nuuroo", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 60, ganda: "B/Oromiyaa", name: "Shukirii Ayyub", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 61, ganda: "R/ifaa", name: "Kadir Mahammad Abdoo", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 62, ganda: "R/ifaa", name: "Kaamil Naasiroo Huseen", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 63, ganda: "R/ifaa", name: "Ziqeey Jamaal Abdullaa", qty: 1, contract: 56350, prior: 5000.00, plan: 51350.00, actual: 5000 },
+      { lakk: 64, ganda: "B/waabee", name: "Masud Abduumaalik Waariyoo", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 65, ganda: "B/waabee", name: "Ziqeey Aliyyii Irbuu", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 66, ganda: "B/waabee", name: "Shukurii Aliyyii Irbuu", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 67, ganda: "B/waabee", name: "Obsaa Muuzayyiin", qty: 2, contract: 112700, prior: 50000.00, plan: 62700.00, actual: 50000 },
+      { lakk: 68, ganda: "B/waabee", name: "Masuud Abdallaa", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 69, ganda: "B/waabee", name: "Abdumaalik Waariyoo", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 70, ganda: "J/Roobaa", name: "Suufiyaan Aliyyii", qty: 1, contract: 56350, prior: 30000.00, plan: 26350.00, actual: 30000 },
+      { lakk: 71, ganda: "J/Roobaa", name: "Ahmad Hasanoo Ibroo", qty: 1, contract: 56350, prior: 30000.00, plan: 26350.00, actual: 30000 },
+      { lakk: 72, ganda: "Annubaa", name: "Hordoofaa Mahammad", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 73, ganda: "Annubaa", name: "Mahammad Naasir sh /Ibraahim", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 74, ganda: "M/biyyaa", name: "Gammadaa Aliyyii", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 75, ganda: "O/gaaddisaa", name: "Siraaj Umar Abdullahi", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 },
+      { lakk: 76, ganda: "k/odaa", name: "Mahammad Hasan Dheeraa", qty: 1, contract: 56350, prior: 25000.00, plan: 31350.00, actual: 25000 }
+    ];
+
+    let rowsData = JSON.parse(localStorage.getItem(STORAGE_ROWS_KEY)) || JSON.parse(JSON.stringify(initialData));
+    let ttnLogs = JSON.parse(localStorage.getItem(STORAGE_TTN_KEY)) || [];
+
+    function saveState() {
+      localStorage.setItem(STORAGE_ROWS_KEY, JSON.stringify(rowsData));
+      localStorage.setItem(STORAGE_TTN_KEY, JSON.stringify(ttnLogs));
+    }
+
+    const fmtInt = (n) => Number(n || 0).toLocaleString("en-US", { maximumFractionDigits: 0 });
+    const fmtDec = (n) => Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const calcPct = (actual, contract) => contract > 0 ? Math.round((actual / contract) * 100) : 0;
+
+    // Cross-check foormaatii TTNO Baankii Siinqee
+    function validateSiinqeeTTNO(rawTtno) {
+      const cleaned = rawTtno.trim().toUpperCase().replace(/\s+/g, "");
+      if (!cleaned) {
+        return { valid: false, msg: "Maaloo lakkoofsa TTNO galchaa." };
+      }
+      // Foormaatii beekamaa: fkn SQ... / FT... ykn qubee/lakkoofsa walitti makame (8-22)
+      const siinqeePattern = /^(SQ|FT|TX|TRX|SB)?[A-Z0-9]{7,20}$/;
+      const hasLetterOrDigit = /^[A-Z0-9]{8,22}$/.test(cleaned);
+      if (!siinqeePattern.test(cleaned) || !hasLetterOrDigit) {
+        return {
+          valid: false,
+          msg: `Lakkoofsi TTNO '${cleaned}' foormaatii Baankii Siinqee hin guutu (qubee fi lakkoofsa 8–22 ykn SQ/FT dursee qabaachuu qaba).`
+        };
+      }
+      // Ragaa hundumaa keessatti TTNO walfakkaataa hin fudhatin
+      const duplicate = ttnLogs.find(item => item.ttn.toUpperCase() === cleaned);
+      if (duplicate) {
+        return {
+          valid: false,
+          msg: `TTNO '${cleaned}' duraan qotee bulaa '${duplicate.farmerName}' (${duplicate.ganda}) irratti galmaa'eera! TTNO walfakkaataa hin fudhatamu.`
+        };
+      }
+      return { valid: true, ttno: cleaned };
+    }
+
+    function showStatus(type, text) {
+      const box = document.getElementById("formStatusMsg");
+      box.className = "status-msg " + type;
+      box.textContent = text;
+    }
+
+    function clearStatus() {
+      const box = document.getElementById("formStatusMsg");
+      box.className = "status-msg";
+      box.textContent = "";
+    }
+
+    function populateGandasAndFilter() {
+      const gandas = [...new Set(rowsData.map(r => r.ganda))];
+
+      const selectGanda = document.getElementById("selectGanda");
+      selectGanda.innerHTML = '<option value="">-- Ganda Filadhu --</option>';
+      gandas.forEach(g => {
+        const opt = document.createElement("option");
+        opt.value = g;
+        opt.textContent = g;
+        selectGanda.appendChild(opt);
+      });
+
+      const tableFilter = document.getElementById("tableGandaFilter");
+      const currentFilter = tableFilter.value;
+      tableFilter.innerHTML = '<option value="">Ganda Hundaa</option>';
+      gandas.forEach(g => {
+        const opt = document.createElement("option");
+        opt.value = g;
+        opt.textContent = g;
+        tableFilter.appendChild(opt);
+      });
+      tableFilter.value = currentFilter;
+    }
+
+    function populateFarmersForGanda(gandaName) {
+      const selectFarmer = document.getElementById("selectFarmer");
+      selectFarmer.innerHTML = '<option value="">-- Maqaa Qotee Bulaa Filadhu --</option>';
+      if (!gandaName) {
+        selectFarmer.disabled = true;
+        updateFarmerDetailsBox(null);
+        return;
+      }
+
+      const matching = rowsData
+        .map((r, index) => ({ row: r, index }))
+        .filter(item => item.row.ganda === gandaName);
+
+      matching.forEach(item => {
+        const opt = document.createElement("option");
+        opt.value = item.index;
+        opt.textContent = `${item.row.lakk}. ${item.row.name}`;
+        selectFarmer.appendChild(opt);
+      });
+
+      selectFarmer.disabled = false;
+      updateFarmerDetailsBox(null);
+    }
+
+    function updateFarmerDetailsBox(row) {
+      const box = document.getElementById("selectedFarmerDetails");
+      if (!row) {
+        box.innerHTML = `
+          <span><b>lakk:</b> -</span>
+          <span><b>Baayina sharaa fudhatee:</b> -</span>
+          <span><b>Qarshii waliigaltee godhame:</b> -</span>
+          <span><b>Qusannaa Duraa qusatame:</b> -</span>
+          <span><b>Karoora deebii liqii:</b> -</span>
+          <span><b>Raawii ammaa:</b> -</span>
+        `;
+        return;
+      }
+      box.innerHTML = `
+        <span><b>lakk:</b> ${row.lakk}</span>
+        <span><b>Baayina sharaa fudhatee:</b> ${fmtInt(row.qty)}</span>
+        <span><b>Qarshii waliigaltee godhame:</b> ${fmtInt(row.contract)}</span>
+        <span><b>Qusannaa Duraa qusatame:</b> ${fmtDec(row.prior)}</span>
+        <span><b>Karoora deebii liqii:</b> ${fmtDec(row.plan)}</span>
+        <span><b>Raawii ammaa:</b> ${fmtInt(row.actual)}</span>
+      `;
+    }
+
+    function getFilteredRows() {
+      const q = document.getElementById("searchInput").value.trim().toLowerCase();
+      const g = document.getElementById("tableGandaFilter").value;
+      return rowsData.filter(r => {
+        const okG = !g || r.ganda === g;
+        const okQ = !q || r.name.toLowerCase().includes(q) || r.ganda.toLowerCase().includes(q);
+        return okG && okQ;
+      });
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById("reportBody");
+      tbody.innerHTML = "";
+      const filtered = getFilteredRows();
+
+      let totQty = 0, totContract = 0, totPrior = 0, totPlan = 0, totActual = 0;
+
+      filtered.forEach(r => {
+        const pct = calcPct(r.actual, r.contract);
+        totQty += r.qty;
+        totContract += r.contract;
+        totPrior += r.prior;
+        totPlan += r.plan;
+        totActual += r.actual;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="center">${r.lakk}</td>
+          <td>${r.ganda}</td>
+          <td>${r.name}</td>
+          <td class="num">${fmtInt(r.qty)}</td>
+          <td class="num">${fmtInt(r.contract)}</td>
+          <td class="num">${fmtDec(r.prior)}</td>
+          <td class="num">${fmtDec(r.plan)}</td>
+          <td class="num">${fmtInt(r.actual)}</td>
+          <td class="num">${pct}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const totPct = calcPct(totActual, totContract);
+      const totalTr = document.createElement("tr");
+      totalTr.className = "total-row";
+      totalTr.innerHTML = `
+        <td></td>
+        <td>Ida'ama</td>
+        <td></td>
+        <td class="num">${fmtInt(totQty)}</td>
+        <td class="num">${fmtInt(totContract)}</td>
+        <td class="num">${fmtDec(totPrior)}</td>
+        <td class="num">${fmtDec(totPlan)}</td>
+        <td class="num">${fmtInt(totActual)}</td>
+        <td class="num">${totPct}</td>
+      `;
+      tbody.appendChild(totalTr);
+
+      document.getElementById("ttnCountText").textContent = "TTNO Galmaa'e: " + ttnLogs.length;
+      if (ttnLogs.length > 0) {
+        document.getElementById("ttnLogSummary").innerHTML =
+          "<b>Ragaa TTNO galmaa'e:</b> " +
+          ttnLogs.map(t => `${t.farmerName} (${t.ganda}) — ${t.bank} | TTNO: <b>${t.ttn}</b> | ${fmtInt(t.amount)} ETB | Suuraa: ${t.receiptName}`).join(" ; ");
+      } else {
+        document.getElementById("ttnLogSummary").textContent = "Ragaa TTNO galmaa'e: Hanga ammaatti kan galmaa'e hin jiru.";
+      }
+    }
+
+    document.getElementById("selectGanda").addEventListener("change", (e) => {
+      populateFarmersForGanda(e.target.value);
+      clearStatus();
+    });
+
+    document.getElementById("selectFarmer").addEventListener("change", (e) => {
+      const idx = e.target.value;
+      updateFarmerDetailsBox(idx !== "" ? rowsData[idx] : null);
+      clearStatus();
+    });
+
+    document.getElementById("toggleFormBtn").addEventListener("click", () => {
+      clearStatus();
+      document.getElementById("paymentPanel").classList.toggle("active");
+    });
+
+    document.getElementById("cancelFormBtn").addEventListener("click", () => {
+      clearStatus();
+      document.getElementById("paymentPanel").classList.remove("active");
+    });
+
+    document.getElementById("paymentForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      clearStatus();
+
+      const ganda = document.getElementById("selectGanda").value;
+      const farmerIdx = document.getElementById("selectFarmer").value;
+      const bank = document.getElementById("selectBank").value;
+      const rawTtno = document.getElementById("ttnInput").value;
+      const paidAmount = parseFloat(document.getElementById("paidAmountInput").value) || 0;
+      const fileInput = document.getElementById("receiptFileInput");
+      const receiptFile = fileInput.files[0];
+
+      if (!ganda || farmerIdx === "") {
+        showStatus("error", "Maaloo Ganda fi Maqaa Qotee Bulaa filadhaa.");
+        return;
+      }
+
+      if (paidAmount <= 0) {
+        showStatus("error", "Qarshii liqii deebise 0 ol ta'uu qaba.");
+        return;
+      }
+
+      if (!receiptFile || !receiptFile.type.startsWith("image/")) {
+        showStatus("error", "Maaloo suuraa ragaa baankii (image) sirrii ta'e filadhaa.");
+        return;
+      }
+
+      // Cross-check TTNO Baankii Siinqee fi duplicate check
+      const check = validateSiinqeeTTNO(rawTtno);
+      if (!check.valid) {
+        showStatus("error", check.msg);
+        return;
+      }
+
+      const targetFarmer = rowsData[parseInt(farmerIdx, 10)];
+      targetFarmer.actual = (parseFloat(targetFarmer.actual) || 0) + paidAmount;
+
+      ttnLogs.push({
+        dateAndYear: dateYearStr,
+        ganda: targetFarmer.ganda,
+        farmerName: targetFarmer.name,
+        bank,
+        ttn: check.ttno,
+        amount: paidAmount,
+        receiptName: receiptFile.name
+      });
+
+      saveState();
+      renderTable();
+      updateFarmerDetailsBox(targetFarmer);
+
+      document.getElementById("ttnInput").value = "";
+      document.getElementById("paidAmountInput").value = "";
+      fileInput.value = "";
+
+      showStatus(
+        "success",
+        `Kaffaltii ${fmtInt(paidAmount)} ETB kan qotee bulaa '${targetFarmer.name}' (TTNO: ${check.ttno}) milkaa'inaan galmaa'eera!`
+      );
+    });
+
+    function buildReportSheetRows() {
+      const titleRow = [dateYearStr, "", "", "", "", "", "", "", ""];
+      const helpRow = ["Odeeffannoo fi gargaarsaaf: +251905158371", "", "", "", "", "", "", "", ""];
+      const headers = [
+        "lakk",
+        "Ganda",
+        "Maqaa Qonnaa bulaa",
+        "Baayina sharaa fudhatee",
+        "Qarshii waliigaltee godhame",
+        "Qusannaa Duraa qusatame",
+        "Karoora deebii liqii",
+        "Raawii deebii liqii",
+        "%deebi'e"
+      ];
+
+      let totQty = 0, totContract = 0, totPrior = 0, totPlan = 0, totActual = 0;
+      const dataRows = rowsData.map(r => {
+        const pct = calcPct(r.actual, r.contract);
+        totQty += r.qty;
+        totContract += r.contract;
+        totPrior += r.prior;
+        totPlan += r.plan;
+        totActual += r.actual;
+        return [r.lakk, r.ganda, r.name, r.qty, r.contract, r.prior, r.plan, r.actual, pct];
+      });
+
+      const totalRow = [
+        "",
+        "Ida'ama",
+        "",
+        totQty,
+        totContract,
+        totPrior,
+        totPlan,
+        totActual,
+        calcPct(totActual, totContract)
+      ];
+
+      return [titleRow, helpRow, headers, ...dataRows, totalRow];
+    }
+
+    document.getElementById("downloadExcelBtn").addEventListener("click", () => {
+      const wb = XLSX.utils.book_new();
+      const ws1 = XLSX.utils.aoa_to_sheet(buildReportSheetRows());
+      XLSX.utils.book_append_sheet(wb, ws1, "Gabaasa_Deebii_Liqii");
+
+      const ttnSheetRows = [
+        [dateYearStr, "", "", "", "", "", ""],
+        ["Odeeffannoo fi gargaarsaaf: +251905158371", "", "", "", "", "", ""],
+        ["Ganda", "Maqaa Qonnaa bulaa", "Baankii", "TTNO", "Qarshii Deebise (ETB)", "Faayila Suuraa Ragaa", "Guyyaa fi Bara"],
+        ...ttnLogs.map(t => [t.ganda, t.farmerName, t.bank, t.ttn, t.amount, t.receiptName, t.dateAndYear])
+      ];
+      const ws2 = XLSX.utils.aoa_to_sheet(ttnSheetRows);
+      XLSX.utils.book_append_sheet(wb, ws2, "Ragaa_TTNO_Suuraa");
+
+      const stamp = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, `Gabaasa_Siinqee_${stamp}.xlsx`);
+    });
+
+    document.getElementById("downloadCsvBtn").addEventListener("click", () => {
+      const rows = buildReportSheetRows();
+      const csv = rows.map(r =>
+        r.map(val => `"${String(val ?? "").replace(/"/g, '""')}"`).join(",")
+      ).join("\n");
+
+      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Gabaasa_Siinqee_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    document.getElementById("searchInput").addEventListener("input", renderTable);
+    document.getElementById("tableGandaFilter").addEventListener("change", renderTable);
+
+    populateGandasAndFilter();
+    renderTable();
+  </script>
+</body>
+</html>
